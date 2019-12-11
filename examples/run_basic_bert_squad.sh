@@ -4,8 +4,7 @@ python3 run_squad.py  \
  --do_train \
  --do_eval \
  --do_lower_case \
- --train_file squad-1.1/train-v1.1.json \
- --predict_file squad-1.1/dev-v1.1.json \
+ --data_dir squad-1.1 \
  --per_gpu_train_batch_size 12 \
  --learning_rate 3e-5 \
  --num_train_epochs 2.0 \
