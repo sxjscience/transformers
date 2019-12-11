@@ -1,4 +1,4 @@
-python run_squad.py  \
+python3 run_squad.py  \
  --model_type bert \
  --model_name_or_path bert-base-cased \
  --do_train \
