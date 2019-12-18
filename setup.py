@@ -44,7 +44,7 @@ extras['all'] = [package for package in extras.values()]
 
 setup(
     name="transformers",
-    version="2.2.1",
+    version="2.2.2",
     author="Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Google AI Language Team Authors, Open AI team Authors, Facebook AI Authors, Carnegie Mellon University Authors",
     author_email="thomas@huggingface.co",
     description="State-of-the-art Natural Language Processing for TensorFlow 2.0 and PyTorch",
@@ -59,7 +59,7 @@ setup(
                       'boto3',
                       'requests',
                       'tqdm',
-                      'regex',
+                      'regex != 2019.12.17',
                       'sentencepiece',
                       'sacremoses'],
     entry_points={

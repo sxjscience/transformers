@@ -18,23 +18,42 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 
-from .modeling_bert import BertModel, BertForMaskedLM, BertForSequenceClassification, BertForQuestionAnswering
-from .modeling_openai import OpenAIGPTModel, OpenAIGPTLMHeadModel
-from .modeling_gpt2 import GPT2Model, GPT2LMHeadModel
-from .modeling_ctrl import CTRLModel, CTRLLMHeadModel
-from .modeling_transfo_xl import TransfoXLModel, TransfoXLLMHeadModel
-from .modeling_xlnet import XLNetModel, XLNetLMHeadModel, XLNetForSequenceClassification, XLNetForQuestionAnswering
-from .modeling_xlm import XLMModel, XLMWithLMHeadModel, XLMForSequenceClassification, XLMForQuestionAnswering
-from .modeling_roberta import RobertaModel, RobertaForMaskedLM, RobertaForSequenceClassification
-from .modeling_distilbert import DistilBertModel, DistilBertForQuestionAnswering, DistilBertForMaskedLM, DistilBertForSequenceClassification
-from .modeling_camembert import CamembertModel, CamembertForMaskedLM, CamembertForSequenceClassification, CamembertForMultipleChoice
-from .modeling_albert import AlbertModel, AlbertForMaskedLM, AlbertForSequenceClassification, AlbertForQuestionAnswering
+from .modeling_bert import BertModel, BertForMaskedLM, BertForSequenceClassification, BertForQuestionAnswering, BERT_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_openai import OpenAIGPTModel, OpenAIGPTLMHeadModel, OPENAI_GPT_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_gpt2 import GPT2Model, GPT2LMHeadModel, GPT2_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_ctrl import CTRLModel, CTRLLMHeadModel, CTRL_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_transfo_xl import TransfoXLModel, TransfoXLLMHeadModel, TRANSFO_XL_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_xlnet import XLNetModel, XLNetLMHeadModel, XLNetForSequenceClassification, XLNetForQuestionAnswering, XLNET_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_xlm import XLMModel, XLMWithLMHeadModel, XLMForSequenceClassification, XLMForQuestionAnswering, XLM_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_roberta import RobertaModel, RobertaForMaskedLM, RobertaForSequenceClassification, ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_distilbert import DistilBertModel, DistilBertForQuestionAnswering, DistilBertForMaskedLM, DistilBertForSequenceClassification, DISTILBERT_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_camembert import CamembertModel, CamembertForMaskedLM, CamembertForSequenceClassification, CamembertForMultipleChoice, CAMEMBERT_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_albert import AlbertModel, AlbertForMaskedLM, AlbertForSequenceClassification, AlbertForQuestionAnswering, ALBERT_PRETRAINED_MODEL_ARCHIVE_MAP
+from .modeling_t5 import T5Model, T5WithLMHeadModel, T5_PRETRAINED_MODEL_ARCHIVE_MAP
 
 from .modeling_utils import PreTrainedModel, SequenceSummary
 
 from .file_utils import add_start_docstrings
 
 logger = logging.getLogger(__name__)
+
+
+ALL_PRETRAINED_MODEL_ARCHIVE_MAP = dict((key, value)
+    for pretrained_map in [
+        BERT_PRETRAINED_MODEL_ARCHIVE_MAP,
+        OPENAI_GPT_PRETRAINED_MODEL_ARCHIVE_MAP,
+        TRANSFO_XL_PRETRAINED_MODEL_ARCHIVE_MAP,
+        GPT2_PRETRAINED_MODEL_ARCHIVE_MAP,
+        CTRL_PRETRAINED_MODEL_ARCHIVE_MAP,
+        XLNET_PRETRAINED_MODEL_ARCHIVE_MAP,
+        XLM_PRETRAINED_MODEL_ARCHIVE_MAP,
+        ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP,
+        DISTILBERT_PRETRAINED_MODEL_ARCHIVE_MAP,
+        ALBERT_PRETRAINED_MODEL_ARCHIVE_MAP,
+        CAMEMBERT_PRETRAINED_MODEL_ARCHIVE_MAP,
+        T5_PRETRAINED_MODEL_ARCHIVE_MAP,
+        ]
+    for key, value, in pretrained_map.items())
 
 
 class AutoModel(object):
@@ -49,6 +68,7 @@ class AutoModel(object):
 
         The base model class to instantiate is selected as the first pattern matching
         in the `pretrained_model_name_or_path` string (in the following order):
+            - contains `t5`: T5Model (T5 model)
             - contains `distilbert`: DistilBertModel (DistilBERT model)
             - contains `albert`: AlbertModel (ALBERT model)
             - contains `camembert`: CamembertModel (CamemBERT model)
@@ -74,6 +94,7 @@ class AutoModel(object):
 
         The model class to instantiate is selected as the first pattern matching
         in the `pretrained_model_name_or_path` string (in the following order):
+            - contains `t5`: T5Model (T5 model)
             - contains `distilbert`: DistilBertModel (DistilBERT model)
             - contains `albert`: AlbertModel (ALBERT model)
             - contains `camembert`: CamembertModel (CamemBERT model)
@@ -93,6 +114,7 @@ class AutoModel(object):
             pretrained_model_name_or_path: either:
 
                 - a string with the `shortcut name` of a pre-trained model to load from cache or download, e.g.: ``bert-base-uncased``.
+                - a string with the `identifier name` of a pre-trained model that was user-uploaded to our S3, e.g.: ``dbmdz/bert-base-german-cased``.
                 - a path to a `directory` containing model weights saved using :func:`~transformers.PreTrainedModel.save_pretrained`, e.g.: ``./my_model_directory/``.
                 - a path or url to a `tensorflow index checkpoint file` (e.g. `./tf_model/model.ckpt.index`). In this case, ``from_tf`` should be set to True and a configuration object should be provided as ``config`` argument. This loading path is slower than converting the TensorFlow checkpoint in a PyTorch model using the provided conversion scripts and loading the PyTorch model afterwards.
 
@@ -145,7 +167,9 @@ class AutoModel(object):
             model = AutoModel.from_pretrained('./tf_model/bert_tf_checkpoint.ckpt.index', from_tf=True, config=config)
 
         """
-        if 'distilbert' in pretrained_model_name_or_path:
+        if 't5' in pretrained_model_name_or_path:
+            return T5Model.from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
+        elif 'distilbert' in pretrained_model_name_or_path:
             return DistilBertModel.from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
         elif 'albert' in pretrained_model_name_or_path:
             return AlbertModel.from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
@@ -184,6 +208,7 @@ class AutoModelWithLMHead(object):
 
         The model class to instantiate is selected as the first pattern matching
         in the `pretrained_model_name_or_path` string (in the following order):
+            - contains `t5`: T5ModelWithLMHead (T5 model)
             - contains `distilbert`: DistilBertForMaskedLM (DistilBERT model)
             - contains `albert`: AlbertForMaskedLM (ALBERT model)
             - contains `camembert`: CamembertForMaskedLM (CamemBERT model)
@@ -212,6 +237,7 @@ class AutoModelWithLMHead(object):
 
         The model class to instantiate is selected as the first pattern matching
         in the `pretrained_model_name_or_path` string (in the following order):
+            - contains `t5`: T5ModelWithLMHead (T5 model)
             - contains `distilbert`: DistilBertForMaskedLM (DistilBERT model)
             - contains `albert`: AlbertForMaskedLM (ALBERT model)
             - contains `camembert`: CamembertForMaskedLM (CamemBERT model)
@@ -231,6 +257,7 @@ class AutoModelWithLMHead(object):
             pretrained_model_name_or_path: either:
 
                 - a string with the `shortcut name` of a pre-trained model to load from cache or download, e.g.: ``bert-base-uncased``.
+                - a string with the `identifier name` of a pre-trained model that was user-uploaded to our S3, e.g.: ``dbmdz/bert-base-german-cased``.
                 - a path to a `directory` containing model weights saved using :func:`~transformers.PreTrainedModel.save_pretrained`, e.g.: ``./my_model_directory/``.
                 - a path or url to a `tensorflow index checkpoint file` (e.g. `./tf_model/model.ckpt.index`). In this case, ``from_tf`` should be set to True and a configuration object should be provided as ``config`` argument. This loading path is slower than converting the TensorFlow checkpoint in a PyTorch model using the provided conversion scripts and loading the PyTorch model afterwards.
 
@@ -282,7 +309,9 @@ class AutoModelWithLMHead(object):
             model = AutoModelWithLMHead.from_pretrained('./tf_model/bert_tf_checkpoint.ckpt.index', from_tf=True, config=config)
 
         """
-        if 'distilbert' in pretrained_model_name_or_path:
+        if 't5' in pretrained_model_name_or_path:
+            return T5WithLMHeadModel.from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
+        elif 'distilbert' in pretrained_model_name_or_path:
             return DistilBertForMaskedLM.from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
         elif 'albert' in pretrained_model_name_or_path:
             return AlbertForMaskedLM.from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
@@ -360,6 +389,7 @@ class AutoModelForSequenceClassification(object):
             pretrained_model_name_or_path: either:
 
                 - a string with the `shortcut name` of a pre-trained model to load from cache or download, e.g.: ``bert-base-uncased``.
+                - a string with the `identifier name` of a pre-trained model that was user-uploaded to our S3, e.g.: ``dbmdz/bert-base-german-cased``.
                 - a path to a `directory` containing model weights saved using :func:`~transformers.PreTrainedModel.save_pretrained`, e.g.: ``./my_model_directory/``.
                 - a path or url to a `tensorflow index checkpoint file` (e.g. `./tf_model/model.ckpt.index`). In this case, ``from_tf`` should be set to True and a configuration object should be provided as ``config`` argument. This loading path is slower than converting the TensorFlow checkpoint in a PyTorch model using the provided conversion scripts and loading the PyTorch model afterwards.
 
@@ -478,6 +508,7 @@ class AutoModelForQuestionAnswering(object):
             pretrained_model_name_or_path: either:
 
                 - a string with the `shortcut name` of a pre-trained model to load from cache or download, e.g.: ``bert-base-uncased``.
+                - a string with the `identifier name` of a pre-trained model that was user-uploaded to our S3, e.g.: ``dbmdz/bert-base-german-cased``.
                 - a path to a `directory` containing model weights saved using :func:`~transformers.PreTrainedModel.save_pretrained`, e.g.: ``./my_model_directory/``.
                 - a path or url to a `tensorflow index checkpoint file` (e.g. `./tf_model/model.ckpt.index`). In this case, ``from_tf`` should be set to True and a configuration object should be provided as ``config`` argument. This loading path is slower than converting the TensorFlow checkpoint in a PyTorch model using the provided conversion scripts and loading the PyTorch model afterwards.
 
