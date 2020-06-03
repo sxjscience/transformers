@@ -1,13 +1,27 @@
-from transformers import (
-    AutoTokenizer, AutoConfig, AutoModel, AutoModelWithLMHead, AutoModelForSequenceClassification, AutoModelForQuestionAnswering
-)
-from transformers.file_utils import add_start_docstrings
+import os
+import sys
 
-dependencies = ['torch', 'tqdm', 'boto3', 'requests', 'regex', 'sentencepiece', 'sacremoses']
+SRC_DIR = os.path.join(os.path.dirname(__file__), "src")
+sys.path.append(SRC_DIR)
+
+
+from transformers import (
+    AutoConfig,
+    AutoModel,
+    AutoModelForQuestionAnswering,
+    AutoModelForSequenceClassification,
+    AutoModelWithLMHead,
+    AutoTokenizer,
+    add_start_docstrings,
+)
+
+
+dependencies = ["torch", "numpy", "tokenizers", "filelock", "requests", "tqdm", "regex", "sentencepiece", "sacremoses"]
+
 
 @add_start_docstrings(AutoConfig.__doc__)
 def config(*args, **kwargs):
-    r""" 
+    r"""
                 # Using torch.hub !
                 import torch
 
@@ -27,7 +41,7 @@ def config(*args, **kwargs):
 
 @add_start_docstrings(AutoTokenizer.__doc__)
 def tokenizer(*args, **kwargs):
-    r""" 
+    r"""
         # Using torch.hub !
         import torch
 
@@ -56,6 +70,7 @@ def model(*args, **kwargs):
         """
 
     return AutoModel.from_pretrained(*args, **kwargs)
+
 
 @add_start_docstrings(AutoModelWithLMHead.__doc__)
 def modelWithLMHead(*args, **kwargs):

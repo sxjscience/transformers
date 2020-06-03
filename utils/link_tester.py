@@ -14,6 +14,9 @@ import requests
 REGEXP_FIND_S3_LINKS = r"""([\"'])(https:\/\/s3)(.*)?\1"""
 
 
+S3_BUCKET_PREFIX = "https://s3.amazonaws.com/models.huggingface.co/bert"
+
+
 def list_python_files_in_repository():
     """ List all python files in the repository.
 
@@ -36,14 +39,14 @@ def find_all_links(file_paths):
     for path in file_paths:
         links += scan_code_for_links(path)
 
-    return links
+    return [link for link in links if link != S3_BUCKET_PREFIX]
 
 
 def scan_code_for_links(source):
     """ Scans the file to find links using a regular expression.
     Returns a list of links.
     """
-    with open(source, 'r') as content:
+    with open(source, "r") as content:
         content = content.read()
         raw_links = re.findall(REGEXP_FIND_S3_LINKS, content)
         links = [prefix + suffix for _, prefix, suffix in raw_links]
