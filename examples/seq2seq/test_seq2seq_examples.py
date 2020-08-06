@@ -8,15 +8,17 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import pytorch_lightning as pl
 import torch
 from pytest import param
 from torch.utils.data import DataLoader
 
+import lightning_base
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, MBartTokenizer
 from transformers.testing_utils import require_multigpu
 
 from .distillation import distill_main, evaluate_checkpoint
-from .finetune import main
+from .finetune import SummarizationModule, main
 from .pack_dataset import pack_data_dir
 from .run_eval import generate_summaries_or_translations, run_generate
 from .utils import MBartDataset, Seq2SeqDataset, label_smoothed_nll_loss, lmap, load_json
@@ -60,6 +62,7 @@ CHEAP_ARGS = {
     "tokenizer_name": "facebook/bart-large",
     "do_lower_case": False,
     "learning_rate": 0.3,
+    "lr_scheduler": "linear",
     "weight_decay": 0.0,
     "adam_epsilon": 1e-08,
     "warmup_steps": 0,
@@ -144,7 +147,7 @@ class TestSummarizationDistiller(unittest.TestCase):
         evaluate_checkpoint(ckpts[0], dest_dir=Path(tempfile.mkdtemp()))
 
     def test_loss_fn(self):
-        model = AutoModelForSeq2SeqLM.from_pretrained(BART_TINY)
+        model = AutoModelForSeq2SeqLM.from_pretrained(BART_TINY, return_dict=True)
         input_ids, mask = model.dummy_inputs["input_ids"], model.dummy_inputs["attention_mask"]
         target_ids = torch.tensor([[0, 4, 8, 2], [0, 8, 2, 1]], dtype=torch.long, device=model.device)
         decoder_input_ids = target_ids[:, :-1].contiguous()  # Why this line?
@@ -275,6 +278,114 @@ def test_finetune(model):
         # check that embeds are the same
         assert bart.decoder.embed_tokens == bart.encoder.embed_tokens
         assert bart.decoder.embed_tokens == bart.shared
+
+
+def test_finetune_extra_model_args():
+    args_d: dict = CHEAP_ARGS.copy()
+
+    task = "summarization"
+    tmp_dir = make_test_data_dir()
+
+    args_d.update(
+        data_dir=tmp_dir,
+        tokenizer_name=None,
+        train_batch_size=2,
+        eval_batch_size=2,
+        do_predict=False,
+        task=task,
+        src_lang="en_XX",
+        tgt_lang="ro_RO",
+        freeze_encoder=True,
+        freeze_embeds=True,
+    )
+
+    # test models whose config includes the extra_model_args
+    model = BART_TINY
+    output_dir = tempfile.mkdtemp(prefix="output_1_")
+    args_d1 = args_d.copy()
+    args_d1.update(
+        model_name_or_path=model, output_dir=output_dir,
+    )
+    extra_model_params = ("encoder_layerdrop", "decoder_layerdrop", "dropout", "attention_dropout")
+    for p in extra_model_params:
+        args_d1[p] = 0.5
+    args = argparse.Namespace(**args_d1)
+    model = main(args)
+    for p in extra_model_params:
+        assert getattr(model.config, p) == 0.5, f"failed to override the model config for param {p}"
+
+    # test models whose config doesn't include the extra_model_args
+    model = T5_TINY
+    output_dir = tempfile.mkdtemp(prefix="output_2_")
+    args_d2 = args_d.copy()
+    args_d2.update(
+        model_name_or_path=model, output_dir=output_dir,
+    )
+    unsupported_param = "encoder_layerdrop"
+    args_d2[unsupported_param] = 0.5
+    args = argparse.Namespace(**args_d2)
+    with pytest.raises(Exception) as excinfo:
+        model = main(args)
+    assert str(excinfo.value) == f"model config doesn't have a `{unsupported_param}` attribute"
+
+
+def test_finetune_lr_shedulers(capsys):
+    args_d: dict = CHEAP_ARGS.copy()
+
+    task = "summarization"
+    tmp_dir = make_test_data_dir()
+
+    model = BART_TINY
+    output_dir = tempfile.mkdtemp(prefix="output_1_")
+
+    args_d.update(
+        data_dir=tmp_dir,
+        model_name_or_path=model,
+        output_dir=output_dir,
+        tokenizer_name=None,
+        train_batch_size=2,
+        eval_batch_size=2,
+        do_predict=False,
+        task=task,
+        src_lang="en_XX",
+        tgt_lang="ro_RO",
+        freeze_encoder=True,
+        freeze_embeds=True,
+    )
+
+    # emulate finetune.py
+    parser = argparse.ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    parser = SummarizationModule.add_model_specific_args(parser, os.getcwd())
+    args = {"--help": True}
+
+    # --help test
+    with pytest.raises(SystemExit) as excinfo:
+        args = parser.parse_args(args)
+        assert False, "--help is expected to sys.exit"
+    assert excinfo.type == SystemExit
+    captured = capsys.readouterr()
+    expected = lightning_base.arg_to_scheduler_metavar
+    assert expected in captured.out, "--help is expected to list the supported schedulers"
+
+    # --lr_scheduler=non_existing_scheduler test
+    unsupported_param = "non_existing_scheduler"
+    args = {f"--lr_scheduler={unsupported_param}"}
+    with pytest.raises(SystemExit) as excinfo:
+        args = parser.parse_args(args)
+        assert False, "invalid argument is expected to sys.exit"
+    assert excinfo.type == SystemExit
+    captured = capsys.readouterr()
+    expected = f"invalid choice: '{unsupported_param}'"
+    assert expected in captured.err, f"should have bailed on invalid choice of scheduler {unsupported_param}"
+
+    # --lr_scheduler=existing_scheduler test
+    supported_param = "cosine"
+    args_d1 = args_d.copy()
+    args_d1["lr_scheduler"] = supported_param
+    args = argparse.Namespace(**args_d1)
+    model = main(args)
+    assert getattr(model.hparams, "lr_scheduler") == supported_param, f"lr_scheduler={supported_param} shouldn't fail"
 
 
 def test_pack_dataset():
