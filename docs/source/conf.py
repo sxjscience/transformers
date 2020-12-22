@@ -20,13 +20,13 @@ sys.path.insert(0, os.path.abspath('../../src'))
 # -- Project information -----------------------------------------------------
 
 project = u'transformers'
-copyright = u'2020, huggingface'
+copyright = u'2020, The Hugging Face Team, Licenced under the Apache License, Version 2.0'
 author = u'huggingface'
 
 # The short X.Y version
 version = u''
 # The full version, including alpha/beta/rc tags
-release = u'3.0.2'
+release = u'4.1.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -76,7 +76,8 @@ exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store']
 pygments_style = None
 
 # Remove the prompt when copying examples
-copybutton_prompt_text = ">>> "
+copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_is_regexp = True
 
 # -- Options for HTML output -------------------------------------------------
 

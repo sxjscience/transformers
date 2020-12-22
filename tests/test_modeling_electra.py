@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Google AI Language Team Authors.
+# Copyright 2020 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,26 +20,30 @@ from transformers import is_torch_available
 from transformers.testing_utils import require_torch, slow, torch_device
 
 from .test_configuration_common import ConfigTester
-from .test_modeling_common import ModelTesterMixin, ids_tensor
+from .test_modeling_common import ModelTesterMixin, ids_tensor, random_attention_mask
 
 
 if is_torch_available():
+    import torch
+
     from transformers import (
+        MODEL_FOR_PRETRAINING_MAPPING,
         ElectraConfig,
-        ElectraModel,
         ElectraForMaskedLM,
-        ElectraForTokenClassification,
-        ElectraForPreTraining,
         ElectraForMultipleChoice,
-        ElectraForSequenceClassification,
+        ElectraForPreTraining,
         ElectraForQuestionAnswering,
+        ElectraForSequenceClassification,
+        ElectraForTokenClassification,
+        ElectraModel,
     )
-    from transformers.modeling_electra import ELECTRA_PRETRAINED_MODEL_ARCHIVE_LIST
+    from transformers.models.electra.modeling_electra import ELECTRA_PRETRAINED_MODEL_ARCHIVE_LIST
 
 
 class ElectraModelTester:
     def __init__(
-        self, parent,
+        self,
+        parent,
     ):
         self.parent = parent
         self.batch_size = 13
@@ -69,7 +73,7 @@ class ElectraModelTester:
 
         input_mask = None
         if self.use_input_mask:
-            input_mask = ids_tensor([self.batch_size, self.seq_length], vocab_size=2)
+            input_mask = random_attention_mask([self.batch_size, self.seq_length])
 
         token_type_ids = None
         if self.use_token_type_ids:
@@ -97,7 +101,6 @@ class ElectraModelTester:
             type_vocab_size=self.type_vocab_size,
             is_decoder=False,
             initializer_range=self.initializer_range,
-            return_dict=True,
         )
 
         return (
@@ -275,6 +278,7 @@ class ElectraModelTest(ModelTesterMixin, unittest.TestCase):
             ElectraModel,
             ElectraForPreTraining,
             ElectraForMaskedLM,
+            ElectraForMultipleChoice,
             ElectraForTokenClassification,
             ElectraForSequenceClassification,
             ElectraForQuestionAnswering,
@@ -282,6 +286,17 @@ class ElectraModelTest(ModelTesterMixin, unittest.TestCase):
         if is_torch_available()
         else ()
     )
+
+    # special case for ForPreTraining model
+    def _prepare_for_class(self, inputs_dict, model_class, return_labels=False):
+        inputs_dict = super()._prepare_for_class(inputs_dict, model_class, return_labels=return_labels)
+
+        if return_labels:
+            if model_class in MODEL_FOR_PRETRAINING_MAPPING.values():
+                inputs_dict["labels"] = torch.zeros(
+                    (self.model_tester.batch_size, self.model_tester.seq_length), dtype=torch.long, device=torch_device
+                )
+        return inputs_dict
 
     def setUp(self):
         self.model_tester = ElectraModelTester(self)
@@ -293,6 +308,12 @@ class ElectraModelTest(ModelTesterMixin, unittest.TestCase):
     def test_electra_model(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()
         self.model_tester.create_and_check_electra_model(*config_and_inputs)
+
+    def test_electra_model_various_embeddings(self):
+        config_and_inputs = self.model_tester.prepare_config_and_inputs()
+        for type in ["absolute", "relative_key", "relative_key_query"]:
+            config_and_inputs[0].position_embedding_type = type
+            self.model_tester.create_and_check_electra_model(*config_and_inputs)
 
     def test_for_masked_lm(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()

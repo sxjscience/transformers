@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Google AI Language Team Authors.
+# Copyright 2020 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,26 +20,29 @@ from transformers import is_torch_available
 from transformers.testing_utils import require_torch, slow, torch_device
 
 from .test_configuration_common import ConfigTester
-from .test_modeling_common import ModelTesterMixin, ids_tensor
+from .test_modeling_common import ModelTesterMixin, ids_tensor, random_attention_mask
 
 
 if is_torch_available():
+    import torch
+
     from transformers import (
         FlaubertConfig,
-        FlaubertModel,
-        FlaubertWithLMHeadModel,
+        FlaubertForMultipleChoice,
         FlaubertForQuestionAnswering,
         FlaubertForQuestionAnsweringSimple,
         FlaubertForSequenceClassification,
         FlaubertForTokenClassification,
-        FlaubertForMultipleChoice,
+        FlaubertModel,
+        FlaubertWithLMHeadModel,
     )
-    from transformers.modeling_flaubert import FLAUBERT_PRETRAINED_MODEL_ARCHIVE_LIST
+    from transformers.models.flaubert.modeling_flaubert import FLAUBERT_PRETRAINED_MODEL_ARCHIVE_LIST
 
 
 class FlaubertModelTester(object):
     def __init__(
-        self, parent,
+        self,
+        parent,
     ):
         self.parent = parent
         self.batch_size = 13
@@ -72,7 +75,7 @@ class FlaubertModelTester(object):
 
     def prepare_config_and_inputs(self):
         input_ids = ids_tensor([self.batch_size, self.seq_length], self.vocab_size)
-        input_mask = ids_tensor([self.batch_size, self.seq_length], 2).float()
+        input_mask = random_attention_mask([self.batch_size, self.seq_length])
 
         input_lengths = None
         if self.use_input_lengths:
@@ -110,7 +113,6 @@ class FlaubertModelTester(object):
             initializer_range=self.initializer_range,
             summary_type=self.summary_type,
             use_proj=self.use_proj,
-            return_dict=True,
         )
 
         return (
@@ -341,6 +343,21 @@ class FlaubertModelTest(ModelTesterMixin, unittest.TestCase):
         if is_torch_available()
         else ()
     )
+
+    # Flaubert has 2 QA models -> need to manually set the correct labels for one of them here
+    def _prepare_for_class(self, inputs_dict, model_class, return_labels=False):
+        inputs_dict = super()._prepare_for_class(inputs_dict, model_class, return_labels=return_labels)
+
+        if return_labels:
+            if model_class.__name__ == "FlaubertForQuestionAnswering":
+                inputs_dict["start_positions"] = torch.zeros(
+                    self.model_tester.batch_size, dtype=torch.long, device=torch_device
+                )
+                inputs_dict["end_positions"] = torch.zeros(
+                    self.model_tester.batch_size, dtype=torch.long, device=torch_device
+                )
+
+        return inputs_dict
 
     def setUp(self):
         self.model_tester = FlaubertModelTester(self)

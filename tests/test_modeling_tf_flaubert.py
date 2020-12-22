@@ -16,31 +16,32 @@
 import unittest
 
 from transformers import is_tf_available
-from transformers.testing_utils import require_tf, slow
+from transformers.testing_utils import require_sentencepiece, require_tf, require_tokenizers, slow
 
 from .test_configuration_common import ConfigTester
 from .test_modeling_tf_common import TFModelTesterMixin, ids_tensor
 
 
 if is_tf_available():
-    import tensorflow as tf
     import numpy as np
+    import tensorflow as tf
 
     from transformers import (
+        TF_FLAUBERT_PRETRAINED_MODEL_ARCHIVE_LIST,
         FlaubertConfig,
+        TFFlaubertForMultipleChoice,
+        TFFlaubertForQuestionAnsweringSimple,
+        TFFlaubertForSequenceClassification,
+        TFFlaubertForTokenClassification,
         TFFlaubertModel,
         TFFlaubertWithLMHeadModel,
-        TFFlaubertForSequenceClassification,
-        TFFlaubertForQuestionAnsweringSimple,
-        TFFlaubertForTokenClassification,
-        TFFlaubertForMultipleChoice,
-        TF_FLAUBERT_PRETRAINED_MODEL_ARCHIVE_LIST,
     )
 
 
 class TFFlaubertModelTester:
     def __init__(
-        self, parent,
+        self,
+        parent,
     ):
         self.parent = parent
         self.batch_size = 13
@@ -113,7 +114,6 @@ class TFFlaubertModelTester:
             summary_type=self.summary_type,
             use_proj=self.use_proj,
             bos_token_id=self.bos_token_id,
-            return_dict=True,
         )
 
         return (
@@ -146,9 +146,7 @@ class TFFlaubertModelTester:
 
         inputs = [input_ids, input_mask]
         result = model(inputs)
-        self.parent.assertListEqual(
-            list(result["last_hidden_state"].shape), [self.batch_size, self.seq_length, self.hidden_size]
-        )
+        self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
     def create_and_check_flaubert_lm_head(
         self,
@@ -167,7 +165,7 @@ class TFFlaubertModelTester:
         inputs = {"input_ids": input_ids, "lengths": input_lengths, "langs": token_type_ids}
         result = model(inputs)
 
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.seq_length, self.vocab_size])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
 
     def create_and_check_flaubert_qa(
         self,
@@ -187,8 +185,8 @@ class TFFlaubertModelTester:
 
         result = model(inputs)
 
-        self.parent.assertListEqual(list(result["start_logits"].shape), [self.batch_size, self.seq_length])
-        self.parent.assertListEqual(list(result["end_logits"].shape), [self.batch_size, self.seq_length])
+        self.parent.assertEqual(result.start_logits.shape, (self.batch_size, self.seq_length))
+        self.parent.assertEqual(result.end_logits.shape, (self.batch_size, self.seq_length))
 
     def create_and_check_flaubert_sequence_classif(
         self,
@@ -208,7 +206,7 @@ class TFFlaubertModelTester:
 
         result = model(inputs)
 
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.type_sequence_label_size])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.type_sequence_label_size))
 
     def create_and_check_flaubert_for_token_classification(
         self,
@@ -226,7 +224,7 @@ class TFFlaubertModelTester:
         model = TFFlaubertForTokenClassification(config=config)
         inputs = {"input_ids": input_ids, "attention_mask": input_mask, "token_type_ids": token_type_ids}
         result = model(inputs)
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.seq_length, self.num_labels])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.num_labels))
 
     def create_and_check_flaubert_for_multiple_choice(
         self,
@@ -251,7 +249,7 @@ class TFFlaubertModelTester:
             "token_type_ids": multiple_choice_token_type_ids,
         }
         result = model(inputs)
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.num_choices])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.num_choices))
 
     def prepare_config_and_inputs_for_common(self):
         config_and_inputs = self.prepare_config_and_inputs()
@@ -331,15 +329,26 @@ class TFFlaubertModelTest(TFModelTesterMixin, unittest.TestCase):
             model = TFFlaubertModel.from_pretrained(model_name)
             self.assertIsNotNone(model)
 
+    def test_saved_model_with_hidden_states_output(self):
+        # Should be uncommented during patrick TF refactor
+        pass
+
+    def test_saved_model_with_attentions_output(self):
+        # Should be uncommented during patrick TF refactor
+        pass
+
 
 @require_tf
+@require_sentencepiece
+@require_tokenizers
 class TFFlaubertModelIntegrationTest(unittest.TestCase):
     @slow
     def test_output_embeds_base_model(self):
         model = TFFlaubertModel.from_pretrained("jplu/tf-flaubert-small-cased")
 
         input_ids = tf.convert_to_tensor(
-            [[0, 158, 735, 2592, 1424, 6727, 82, 1]], dtype=tf.int32,
+            [[0, 158, 735, 2592, 1424, 6727, 82, 1]],
+            dtype=tf.int32,
         )  # "J'aime flaubert !"
 
         output = model(input_ids)[0]

@@ -1,3 +1,17 @@
+# Copyright 2020 The HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 import tempfile
 import unittest
@@ -9,6 +23,7 @@ from transformers.testing_utils import require_tf
 
 if is_tf_available():
     import tensorflow as tf
+
     from transformers import TensorFlowBenchmark, TensorFlowBenchmarkArguments
 
 
@@ -25,11 +40,11 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=False,
-            no_inference=False,
+            inference=True,
             sequence_lengths=[8],
             batch_sizes=[1],
             eager_mode=True,
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args)
         results = benchmark.run()
@@ -41,10 +56,10 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=False,
-            no_inference=False,
+            inference=True,
             sequence_lengths=[8],
             batch_sizes=[1],
-            no_multi_process=True,
+            multi_process=False,
             only_pretrain_model=True,
         )
         benchmark = TensorFlowBenchmark(benchmark_args)
@@ -57,10 +72,10 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=False,
-            no_inference=False,
+            inference=True,
             sequence_lengths=[8],
             batch_sizes=[1],
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args)
         results = benchmark.run()
@@ -73,11 +88,11 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=False,
-            no_inference=False,
+            inference=True,
             sequence_lengths=[8],
             batch_sizes=[1],
             eager_mode=True,
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args, [config])
         results = benchmark.run()
@@ -90,10 +105,10 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=False,
-            no_inference=False,
+            inference=True,
             sequence_lengths=[8],
             batch_sizes=[1],
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args, [config])
         results = benchmark.run()
@@ -105,10 +120,10 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=True,
-            no_inference=True,
+            inference=False,
             sequence_lengths=[8],
             batch_sizes=[1],
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args)
         results = benchmark.run()
@@ -121,10 +136,10 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=True,
-            no_inference=True,
+            inference=False,
             sequence_lengths=[8],
             batch_sizes=[1],
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args, [config])
         results = benchmark.run()
@@ -137,10 +152,10 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=False,
-            no_inference=False,
+            inference=True,
             sequence_lengths=[8],
             batch_sizes=[1],
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args, configs=[config])
         results = benchmark.run()
@@ -153,11 +168,11 @@ class TFBenchmarkTest(unittest.TestCase):
         benchmark_args = TensorFlowBenchmarkArguments(
             models=[MODEL_ID],
             training=False,
-            no_inference=False,
+            inference=True,
             sequence_lengths=[8],
             batch_sizes=[1],
             use_xla=True,
-            no_multi_process=True,
+            multi_process=False,
         )
         benchmark = TensorFlowBenchmark(benchmark_args)
         results = benchmark.run()
@@ -169,14 +184,14 @@ class TFBenchmarkTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             benchmark_args = TensorFlowBenchmarkArguments(
                 models=[MODEL_ID],
-                no_inference=False,
+                inference=True,
                 save_to_csv=True,
                 sequence_lengths=[8],
                 batch_sizes=[1],
                 inference_time_csv_file=os.path.join(tmp_dir, "inf_time.csv"),
                 inference_memory_csv_file=os.path.join(tmp_dir, "inf_mem.csv"),
                 env_info_csv_file=os.path.join(tmp_dir, "env.csv"),
-                no_multi_process=True,
+                multi_process=False,
             )
             benchmark = TensorFlowBenchmark(benchmark_args)
             benchmark.run()
@@ -196,14 +211,14 @@ class TFBenchmarkTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             benchmark_args = TensorFlowBenchmarkArguments(
                 models=[MODEL_ID],
-                no_inference=False,
+                inference=True,
                 sequence_lengths=[8],
                 batch_sizes=[1],
                 log_filename=os.path.join(tmp_dir, "log.txt"),
                 log_print=True,
                 trace_memory_line_by_line=True,
                 eager_mode=True,
-                no_multi_process=True,
+                multi_process=False,
             )
             benchmark = TensorFlowBenchmark(benchmark_args)
             result = benchmark.run()

@@ -33,6 +33,12 @@ from transformers import (
     squad_convert_examples_to_features,
 )
 from transformers.data.processors.squad import SquadV1Processor, SquadV2Processor
+from transformers.utils import logging as hf_logging
+
+
+hf_logging.set_verbosity_info()
+hf_logging.enable_default_handler()
+hf_logging.enable_explicit_format()
 
 
 logger = logging.getLogger(__name__)
@@ -57,7 +63,8 @@ class ModelArguments:
     # If you want to tweak more attributes on your tokenizer, you should do it in a distinct script,
     # or just modify its tokenizer_config.json.
     cache_dir: Optional[str] = field(
-        default=None, metadata={"help": "Where do you want to store the pretrained models downloaded from s3"}
+        default=None,
+        metadata={"help": "Where do you want to store the pretrained models downloaded from huggingface.co"},
     )
 
 
@@ -231,7 +238,12 @@ def main():
     eval_dataset = eval_dataset.apply(tf.data.experimental.assert_cardinality(len(eval_examples)))
 
     # Initialize our Trainer
-    trainer = TFTrainer(model=model, args=training_args, train_dataset=train_dataset, eval_dataset=eval_dataset,)
+    trainer = TFTrainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+    )
 
     # Training
     if training_args.do_train:

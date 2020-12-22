@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2018 The Google AI Language Team Authors.
+# Copyright 2020 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,20 +25,22 @@ from .test_modeling_tf_common import TFModelTesterMixin, ids_tensor
 
 if is_tf_available():
     import tensorflow as tf
-    from transformers.modeling_tf_distilbert import (
-        TFDistilBertModel,
+
+    from transformers.models.distilbert.modeling_tf_distilbert import (
+        TF_DISTILBERT_PRETRAINED_MODEL_ARCHIVE_LIST,
         TFDistilBertForMaskedLM,
+        TFDistilBertForMultipleChoice,
         TFDistilBertForQuestionAnswering,
         TFDistilBertForSequenceClassification,
         TFDistilBertForTokenClassification,
-        TFDistilBertForMultipleChoice,
-        TF_DISTILBERT_PRETRAINED_MODEL_ARCHIVE_LIST,
+        TFDistilBertModel,
     )
 
 
 class TFDistilBertModelTester:
     def __init__(
-        self, parent,
+        self,
+        parent,
     ):
         self.parent = parent
         self.batch_size = 13
@@ -89,7 +91,6 @@ class TFDistilBertModelTester:
             attention_dropout=self.attention_probs_dropout_prob,
             max_position_embeddings=self.max_position_embeddings,
             initializer_range=self.initializer_range,
-            return_dict=True,
         )
 
         return config, input_ids, input_mask, sequence_labels, token_labels, choice_labels
@@ -106,9 +107,7 @@ class TFDistilBertModelTester:
 
         result = model(inputs)
 
-        self.parent.assertListEqual(
-            list(result["last_hidden_state"].shape), [self.batch_size, self.seq_length, self.hidden_size]
-        )
+        self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
     def create_and_check_distilbert_for_masked_lm(
         self, config, input_ids, input_mask, sequence_labels, token_labels, choice_labels
@@ -116,7 +115,7 @@ class TFDistilBertModelTester:
         model = TFDistilBertForMaskedLM(config=config)
         inputs = {"input_ids": input_ids, "attention_mask": input_mask}
         result = model(inputs)
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.seq_length, self.vocab_size])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
 
     def create_and_check_distilbert_for_question_answering(
         self, config, input_ids, input_mask, sequence_labels, token_labels, choice_labels
@@ -127,8 +126,8 @@ class TFDistilBertModelTester:
             "attention_mask": input_mask,
         }
         result = model(inputs)
-        self.parent.assertListEqual(list(result["start_logits"].shape), [self.batch_size, self.seq_length])
-        self.parent.assertListEqual(list(result["end_logits"].shape), [self.batch_size, self.seq_length])
+        self.parent.assertEqual(result.start_logits.shape, (self.batch_size, self.seq_length))
+        self.parent.assertEqual(result.end_logits.shape, (self.batch_size, self.seq_length))
 
     def create_and_check_distilbert_for_sequence_classification(
         self, config, input_ids, input_mask, sequence_labels, token_labels, choice_labels
@@ -137,7 +136,7 @@ class TFDistilBertModelTester:
         model = TFDistilBertForSequenceClassification(config)
         inputs = {"input_ids": input_ids, "attention_mask": input_mask}
         result = model(inputs)
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.num_labels])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.num_labels))
 
     def create_and_check_distilbert_for_multiple_choice(
         self, config, input_ids, input_mask, sequence_labels, token_labels, choice_labels
@@ -151,7 +150,7 @@ class TFDistilBertModelTester:
             "attention_mask": multiple_choice_input_mask,
         }
         result = model(inputs)
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.num_choices])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.num_choices))
 
     def create_and_check_distilbert_for_token_classification(
         self, config, input_ids, input_mask, sequence_labels, token_labels, choice_labels
@@ -160,7 +159,7 @@ class TFDistilBertModelTester:
         model = TFDistilBertForTokenClassification(config)
         inputs = {"input_ids": input_ids, "attention_mask": input_mask}
         result = model(inputs)
-        self.parent.assertListEqual(list(result["logits"].shape), [self.batch_size, self.seq_length, self.num_labels])
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.num_labels))
 
     def prepare_config_and_inputs_for_common(self):
         config_and_inputs = self.prepare_config_and_inputs()
@@ -184,9 +183,6 @@ class TFDistilBertModelTest(TFModelTesterMixin, unittest.TestCase):
         if is_tf_available()
         else None
     )
-    test_pruning = True
-    test_torchscript = True
-    test_head_masking = True
 
     def setUp(self):
         self.model_tester = TFDistilBertModelTester(self)

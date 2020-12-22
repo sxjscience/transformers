@@ -1,3 +1,17 @@
+# Copyright 2020 The HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import csv
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -20,17 +34,20 @@ class PlotArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune, or train from scratch.
     """
 
-    csv_file: str = field(metadata={"help": "The csv file to plot."},)
+    csv_file: str = field(
+        metadata={"help": "The csv file to plot."},
+    )
     plot_along_batch: bool = field(
         default=False,
-        metadata={"help": "Whether to plot along batch size or sequence lengh. Defaults to sequence length."},
+        metadata={"help": "Whether to plot along batch size or sequence length. Defaults to sequence length."},
     )
     is_time: bool = field(
         default=False,
         metadata={"help": "Whether the csv file has time results or memory results. Defaults to memory results."},
     )
     no_log_scale: bool = field(
-        default=False, metadata={"help": "Disable logarithmic scale when plotting"},
+        default=False,
+        metadata={"help": "Disable logarithmic scale when plotting"},
     )
     is_train: bool = field(
         default=False,
@@ -39,7 +56,8 @@ class PlotArguments:
         },
     )
     figure_png_file: Optional[str] = field(
-        default=None, metadata={"help": "Filename under which the plot will be saved. If unused no plot is saved."},
+        default=None,
+        metadata={"help": "Filename under which the plot will be saved. If unused no plot is saved."},
     )
     short_model_names: Optional[List[str]] = list_field(
         default=None, metadata={"help": "List of model names that are used instead of the ones in the csv file."}
