@@ -15,11 +15,9 @@
 from argparse import ArgumentParser, Namespace
 from typing import Any, List, Optional
 
-from transformers import Pipeline
-from transformers.commands import BaseTransformersCLICommand
-from transformers.pipelines import SUPPORTED_TASKS, pipeline
-
+from ..pipelines import SUPPORTED_TASKS, Pipeline, pipeline
 from ..utils import logging
+from . import BaseTransformersCLICommand
 
 
 try:
@@ -135,7 +133,7 @@ class ServeCommand(BaseTransformersCLICommand):
                 "Or install FastAPI and unicorn separately."
             )
         else:
-            logger.info("Serving model over {}:{}".format(host, port))
+            logger.info(f"Serving model over {host}:{port}")
             self._app = FastAPI(
                 routes=[
                     APIRoute(

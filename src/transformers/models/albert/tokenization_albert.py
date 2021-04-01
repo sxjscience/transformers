@@ -22,7 +22,7 @@ from typing import List, Optional, Tuple
 
 import sentencepiece as spm
 
-from ...tokenization_utils import PreTrainedTokenizer
+from ...tokenization_utils import AddedToken, PreTrainedTokenizer
 from ...utils import logging
 
 
@@ -103,8 +103,9 @@ class AlbertTokenizer(PreTrainedTokenizer):
             The token used for masking values. This is the token used when training this model with masked language
             modeling. This is the token which the model will try to predict.
 
-    Attributes: sp_model (:obj:`SentencePieceProcessor`): The `SentencePiece` processor that is used for every
-    conversion (string, tokens and IDs).
+    Attributes:
+        sp_model (:obj:`SentencePieceProcessor`):
+            The `SentencePiece` processor that is used for every conversion (string, tokens and IDs).
     """
 
     vocab_files_names = VOCAB_FILES_NAMES
@@ -126,6 +127,9 @@ class AlbertTokenizer(PreTrainedTokenizer):
         mask_token="[MASK]",
         **kwargs
     ):
+        # Mask token behave like a normal word, i.e. include the space before it
+        mask_token = AddedToken(mask_token, lstrip=True, rstrip=False) if isinstance(mask_token, str) else mask_token
+
         super().__init__(
             do_lower_case=do_lower_case,
             remove_space=remove_space,
@@ -307,7 +311,7 @@ class AlbertTokenizer(PreTrainedTokenizer):
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
         if not os.path.isdir(save_directory):
-            logger.error("Vocabulary path ({}) should be a directory".format(save_directory))
+            logger.error(f"Vocabulary path ({save_directory}) should be a directory")
             return
         out_vocab_file = os.path.join(
             save_directory, (filename_prefix + "-" if filename_prefix else "") + VOCAB_FILES_NAMES["vocab_file"]

@@ -237,7 +237,6 @@ class TFT5ModelTester:
             "input_ids": input_ids,
             "decoder_input_ids": input_ids,
             "decoder_attention_mask": input_mask,
-            "use_cache": False,
         }
         return config, inputs_dict
 
@@ -248,6 +247,7 @@ class TFT5ModelTest(TFModelTesterMixin, unittest.TestCase):
     is_encoder_decoder = True
     all_model_classes = (TFT5Model, TFT5ForConditionalGeneration) if is_tf_available() else ()
     all_generative_model_classes = (TFT5ForConditionalGeneration,) if is_tf_available() else ()
+    test_onnx = False
 
     def setUp(self):
         self.model_tester = TFT5ModelTester(self)
@@ -289,10 +289,21 @@ class TFT5ModelTest(TFModelTesterMixin, unittest.TestCase):
         for model_class in self.all_model_classes:
             model = model_class(config)
             assert isinstance(model.get_input_embeddings(), tf.keras.layers.Layer)
-            x = model.get_output_layer_with_bias()
-            assert x is None
-            name = model.get_prefix_bias_name()
-            assert name is None
+
+            if model_class in self.all_generative_model_classes:
+                x = model.get_output_embeddings()
+                assert isinstance(x, tf.keras.layers.Layer)
+                name = model.get_bias()
+                assert name is None
+            else:
+                x = model.get_output_embeddings()
+                assert x is None
+                name = model.get_bias()
+                assert name is None
+
+    def test_saved_model_creation(self):
+        # This test is too long (>30sec) and makes fail the CI
+        pass
 
     @slow
     def test_model_from_pretrained(self):
@@ -406,6 +417,7 @@ class TFT5EncoderOnlyModelTester:
 class TFT5EncoderOnlyModelTest(TFModelTesterMixin, unittest.TestCase):
     is_encoder_decoder = False
     all_model_classes = (TFT5EncoderModel,) if is_tf_available() else ()
+    test_onnx = False
 
     def setUp(self):
         self.model_tester = TFT5EncoderOnlyModelTester(self)

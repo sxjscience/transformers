@@ -14,10 +14,9 @@
 
 from argparse import ArgumentParser
 
-from transformers.commands import BaseTransformersCLICommand
-from transformers.pipelines import SUPPORTED_TASKS, Pipeline, PipelineDataFormat, pipeline
-
+from ..pipelines import SUPPORTED_TASKS, Pipeline, PipelineDataFormat, pipeline
 from ..utils import logging
+from . import BaseTransformersCLICommand
 
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
@@ -32,8 +31,8 @@ def try_infer_format_from_ext(path: str):
             return ext
 
     raise Exception(
-        "Unable to determine file format from file extension {}. "
-        "Please provide the format through --format {}".format(path, PipelineDataFormat.SUPPORTED_FORMATS)
+        f"Unable to determine file format from file extension {path}. "
+        f"Please provide the format through --format {PipelineDataFormat.SUPPORTED_FORMATS}"
     )
 
 
@@ -106,6 +105,6 @@ class RunCommand(BaseTransformersCLICommand):
         # Saving data
         if self._nlp.binary_output:
             binary_path = self._reader.save_binary(outputs)
-            logger.warning("Current pipeline requires output to be in binary format, saving at {}".format(binary_path))
+            logger.warning(f"Current pipeline requires output to be in binary format, saving at {binary_path}")
         else:
             self._reader.save(outputs)

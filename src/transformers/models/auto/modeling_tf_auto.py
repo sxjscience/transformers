@@ -44,7 +44,11 @@ from ..bert.modeling_tf_bert import (
     TFBertLMHeadModel,
     TFBertModel,
 )
-from ..blenderbot.modeling_tf_blenderbot import TFBlenderbotForConditionalGeneration
+from ..blenderbot.modeling_tf_blenderbot import TFBlenderbotForConditionalGeneration, TFBlenderbotModel
+from ..blenderbot_small.modeling_tf_blenderbot_small import (
+    TFBlenderbotSmallForConditionalGeneration,
+    TFBlenderbotSmallModel,
+)
 from ..camembert.modeling_tf_camembert import (
     TFCamembertForMaskedLM,
     TFCamembertForMultipleChoice,
@@ -52,6 +56,14 @@ from ..camembert.modeling_tf_camembert import (
     TFCamembertForSequenceClassification,
     TFCamembertForTokenClassification,
     TFCamembertModel,
+)
+from ..convbert.modeling_tf_convbert import (
+    TFConvBertForMaskedLM,
+    TFConvBertForMultipleChoice,
+    TFConvBertForQuestionAnswering,
+    TFConvBertForSequenceClassification,
+    TFConvBertForTokenClassification,
+    TFConvBertModel,
 )
 from ..ctrl.modeling_tf_ctrl import TFCTRLForSequenceClassification, TFCTRLLMHeadModel, TFCTRLModel
 from ..distilbert.modeling_tf_distilbert import (
@@ -90,6 +102,13 @@ from ..funnel.modeling_tf_funnel import (
     TFFunnelModel,
 )
 from ..gpt2.modeling_tf_gpt2 import TFGPT2ForSequenceClassification, TFGPT2LMHeadModel, TFGPT2Model
+from ..layoutlm.modeling_tf_layoutlm import (
+    TFLayoutLMForMaskedLM,
+    TFLayoutLMForSequenceClassification,
+    TFLayoutLMForTokenClassification,
+    TFLayoutLMModel,
+)
+from ..led.modeling_tf_led import TFLEDForConditionalGeneration, TFLEDModel
 from ..longformer.modeling_tf_longformer import (
     TFLongformerForMaskedLM,
     TFLongformerForMultipleChoice,
@@ -99,8 +118,8 @@ from ..longformer.modeling_tf_longformer import (
     TFLongformerModel,
 )
 from ..lxmert.modeling_tf_lxmert import TFLxmertForPreTraining, TFLxmertModel
-from ..marian.modeling_tf_marian import TFMarianMTModel
-from ..mbart.modeling_tf_mbart import TFMBartForConditionalGeneration
+from ..marian.modeling_tf_marian import TFMarianModel, TFMarianMTModel
+from ..mbart.modeling_tf_mbart import TFMBartForConditionalGeneration, TFMBartModel
 from ..mobilebert.modeling_tf_mobilebert import (
     TFMobileBertForMaskedLM,
     TFMobileBertForMultipleChoice,
@@ -121,7 +140,7 @@ from ..mpnet.modeling_tf_mpnet import (
 )
 from ..mt5.modeling_tf_mt5 import TFMT5ForConditionalGeneration, TFMT5Model
 from ..openai.modeling_tf_openai import TFOpenAIGPTForSequenceClassification, TFOpenAIGPTLMHeadModel, TFOpenAIGPTModel
-from ..pegasus.modeling_tf_pegasus import TFPegasusForConditionalGeneration
+from ..pegasus.modeling_tf_pegasus import TFPegasusForConditionalGeneration, TFPegasusModel
 from ..roberta.modeling_tf_roberta import (
     TFRobertaForMaskedLM,
     TFRobertaForMultipleChoice,
@@ -166,7 +185,9 @@ from .configuration_auto import (
     BartConfig,
     BertConfig,
     BlenderbotConfig,
+    BlenderbotSmallConfig,
     CamembertConfig,
+    ConvBertConfig,
     CTRLConfig,
     DistilBertConfig,
     DPRConfig,
@@ -174,6 +195,8 @@ from .configuration_auto import (
     FlaubertConfig,
     FunnelConfig,
     GPT2Config,
+    LayoutLMConfig,
+    LEDConfig,
     LongformerConfig,
     LxmertConfig,
     MarianConfig,
@@ -199,6 +222,8 @@ logger = logging.get_logger(__name__)
 TF_MODEL_MAPPING = OrderedDict(
     [
         # Base model mapping
+        (ConvBertConfig, TFConvBertModel),
+        (LEDConfig, TFLEDModel),
         (LxmertConfig, TFLxmertModel),
         (MT5Config, TFMT5Model),
         (T5Config, TFT5Model),
@@ -209,6 +234,7 @@ TF_MODEL_MAPPING = OrderedDict(
         (XLMRobertaConfig, TFXLMRobertaModel),
         (LongformerConfig, TFLongformerModel),
         (RobertaConfig, TFRobertaModel),
+        (LayoutLMConfig, TFLayoutLMModel),
         (BertConfig, TFBertModel),
         (OpenAIGPTConfig, TFOpenAIGPTModel),
         (GPT2Config, TFGPT2Model),
@@ -222,6 +248,12 @@ TF_MODEL_MAPPING = OrderedDict(
         (FunnelConfig, TFFunnelModel),
         (DPRConfig, TFDPRQuestionEncoder),
         (MPNetConfig, TFMPNetModel),
+        (BartConfig, TFBartModel),
+        (MBartConfig, TFMBartModel),
+        (MarianConfig, TFMarianModel),
+        (PegasusConfig, TFPegasusModel),
+        (BlenderbotConfig, TFBlenderbotModel),
+        (BlenderbotSmallConfig, TFBlenderbotSmallModel),
     ]
 )
 
@@ -236,6 +268,7 @@ TF_MODEL_FOR_PRETRAINING_MAPPING = OrderedDict(
         (CamembertConfig, TFCamembertForMaskedLM),
         (XLMRobertaConfig, TFXLMRobertaForMaskedLM),
         (RobertaConfig, TFRobertaForMaskedLM),
+        (LayoutLMConfig, TFLayoutLMForMaskedLM),
         (BertConfig, TFBertForPreTraining),
         (OpenAIGPTConfig, TFOpenAIGPTLMHeadModel),
         (GPT2Config, TFGPT2LMHeadModel),
@@ -254,6 +287,8 @@ TF_MODEL_FOR_PRETRAINING_MAPPING = OrderedDict(
 TF_MODEL_WITH_LM_HEAD_MAPPING = OrderedDict(
     [
         # Model with LM heads mapping
+        (ConvBertConfig, TFConvBertForMaskedLM),
+        (LEDConfig, TFLEDForConditionalGeneration),
         (T5Config, TFT5ForConditionalGeneration),
         (DistilBertConfig, TFDistilBertForMaskedLM),
         (AlbertConfig, TFAlbertForMaskedLM),
@@ -263,6 +298,7 @@ TF_MODEL_WITH_LM_HEAD_MAPPING = OrderedDict(
         (XLMRobertaConfig, TFXLMRobertaForMaskedLM),
         (LongformerConfig, TFLongformerForMaskedLM),
         (RobertaConfig, TFRobertaForMaskedLM),
+        (LayoutLMConfig, TFLayoutLMForMaskedLM),
         (BertConfig, TFBertForMaskedLM),
         (OpenAIGPTConfig, TFOpenAIGPTLMHeadModel),
         (GPT2Config, TFGPT2LMHeadModel),
@@ -297,12 +333,14 @@ TF_MODEL_FOR_CAUSAL_LM_MAPPING = OrderedDict(
 TF_MODEL_FOR_MASKED_LM_MAPPING = OrderedDict(
     [
         # Model for Masked LM mapping
+        (ConvBertConfig, TFConvBertForMaskedLM),
         (DistilBertConfig, TFDistilBertForMaskedLM),
         (AlbertConfig, TFAlbertForMaskedLM),
         (CamembertConfig, TFCamembertForMaskedLM),
         (XLMRobertaConfig, TFXLMRobertaForMaskedLM),
         (LongformerConfig, TFLongformerForMaskedLM),
         (RobertaConfig, TFRobertaForMaskedLM),
+        (LayoutLMConfig, TFLayoutLMForMaskedLM),
         (BertConfig, TFBertForMaskedLM),
         (MobileBertConfig, TFMobileBertForMaskedLM),
         (FlaubertConfig, TFFlaubertWithLMHeadModel),
@@ -317,12 +355,14 @@ TF_MODEL_FOR_MASKED_LM_MAPPING = OrderedDict(
 TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING = OrderedDict(
     [
         # Model for Seq2Seq Causal LM mapping
+        (LEDConfig, TFLEDForConditionalGeneration),
         (MT5Config, TFMT5ForConditionalGeneration),
         (T5Config, TFT5ForConditionalGeneration),
         (MarianConfig, TFMarianMTModel),
         (MBartConfig, TFMBartForConditionalGeneration),
         (PegasusConfig, TFPegasusForConditionalGeneration),
         (BlenderbotConfig, TFBlenderbotForConditionalGeneration),
+        (BlenderbotSmallConfig, TFBlenderbotSmallForConditionalGeneration),
         (BartConfig, TFBartForConditionalGeneration),
     ]
 )
@@ -330,12 +370,14 @@ TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING = OrderedDict(
 TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING = OrderedDict(
     [
         # Model for Sequence Classification mapping
+        (ConvBertConfig, TFConvBertForSequenceClassification),
         (DistilBertConfig, TFDistilBertForSequenceClassification),
         (AlbertConfig, TFAlbertForSequenceClassification),
         (CamembertConfig, TFCamembertForSequenceClassification),
         (XLMRobertaConfig, TFXLMRobertaForSequenceClassification),
         (LongformerConfig, TFLongformerForSequenceClassification),
         (RobertaConfig, TFRobertaForSequenceClassification),
+        (LayoutLMConfig, TFLayoutLMForSequenceClassification),
         (BertConfig, TFBertForSequenceClassification),
         (XLNetConfig, TFXLNetForSequenceClassification),
         (MobileBertConfig, TFMobileBertForSequenceClassification),
@@ -354,6 +396,7 @@ TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING = OrderedDict(
 TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING = OrderedDict(
     [
         # Model for Question Answering mapping
+        (ConvBertConfig, TFConvBertForQuestionAnswering),
         (DistilBertConfig, TFDistilBertForQuestionAnswering),
         (AlbertConfig, TFAlbertForQuestionAnswering),
         (CamembertConfig, TFCamembertForQuestionAnswering),
@@ -374,6 +417,7 @@ TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING = OrderedDict(
 TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING = OrderedDict(
     [
         # Model for Token Classification mapping
+        (ConvBertConfig, TFConvBertForTokenClassification),
         (DistilBertConfig, TFDistilBertForTokenClassification),
         (AlbertConfig, TFAlbertForTokenClassification),
         (CamembertConfig, TFCamembertForTokenClassification),
@@ -382,6 +426,7 @@ TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING = OrderedDict(
         (XLMRobertaConfig, TFXLMRobertaForTokenClassification),
         (LongformerConfig, TFLongformerForTokenClassification),
         (RobertaConfig, TFRobertaForTokenClassification),
+        (LayoutLMConfig, TFLayoutLMForTokenClassification),
         (BertConfig, TFBertForTokenClassification),
         (MobileBertConfig, TFMobileBertForTokenClassification),
         (XLNetConfig, TFXLNetForTokenClassification),
@@ -394,6 +439,7 @@ TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING = OrderedDict(
 TF_MODEL_FOR_MULTIPLE_CHOICE_MAPPING = OrderedDict(
     [
         # Model for Multiple Choice mapping
+        (ConvBertConfig, TFConvBertForMultipleChoice),
         (CamembertConfig, TFCamembertForMultipleChoice),
         (XLMConfig, TFXLMForMultipleChoice),
         (XLMRobertaConfig, TFXLMRobertaForMultipleChoice),
@@ -506,7 +552,7 @@ class TFAutoModel(object):
     r"""
     This is a generic model class that will be instantiated as one of the base model classes of the library when
     created with the when created with the :meth:`~transformers.TFAutoModel.from_pretrained` class method or the
-    :meth:`~transformers.TFAutoModel.from_config` class methods.
+    :meth:`~transformers.TFAutoModel.from_config` class method.
 
     This class cannot be instantiated directly using ``__init__()`` (throws an error).
     """
@@ -520,7 +566,7 @@ class TFAutoModel(object):
 
     @classmethod
     @replace_list_option_in_docstrings(TF_MODEL_MAPPING, use_model_types=False)
-    def from_config(cls, config):
+    def from_config(cls, config, **kwargs):
         r"""
         Instantiates one of the base model classes of the library from a configuration.
 
@@ -542,12 +588,10 @@ class TFAutoModel(object):
             >>> model = TFAutoModel.from_config(config)
         """
         if type(config) in TF_MODEL_MAPPING.keys():
-            return TF_MODEL_MAPPING[type(config)](config)
+            return TF_MODEL_MAPPING[type(config)](config, **kwargs)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_MAPPING.keys())}."
         )
 
     @classmethod
@@ -572,10 +616,11 @@ class TFAutoModel(object):
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModel.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -586,17 +631,15 @@ class TFAutoModel(object):
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForPreTraining(object):
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with the
-    architecture used for pretraining this model---when created with the when created with the
+    architecture used for pretraining this model---when created with the
     :meth:`~transformers.TFAutoModelForPreTraining.from_pretrained` class method or the
     :meth:`~transformers.TFAutoModelForPreTraining.from_config` class method.
 
@@ -638,10 +681,8 @@ class TFAutoModelForPreTraining(object):
         if type(config) in TF_MODEL_FOR_PRETRAINING_MAPPING.keys():
             return TF_MODEL_FOR_PRETRAINING_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_FOR_PRETRAINING_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_PRETRAINING_MAPPING.keys())}."
         )
 
     @classmethod
@@ -666,10 +707,11 @@ class TFAutoModelForPreTraining(object):
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelForPreTraining.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -680,19 +722,16 @@ class TFAutoModelForPreTraining(object):
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_FOR_PRETRAINING_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_PRETRAINING_MAPPING.keys())}."
         )
 
 
 class TFAutoModelWithLMHead(object):
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a
-    language modeling head---when created with the when created with the
-    :meth:`~transformers.TFAutoModelWithLMHead.from_pretrained` class method or the
-    :meth:`~transformers.TFAutoModelWithLMHead.from_config` class method.
+    language modeling head---when created with the :meth:`~transformers.TFAutoModelWithLMHead.from_pretrained` class
+    method or the :meth:`~transformers.TFAutoModelWithLMHead.from_config` class method.
 
     This class cannot be instantiated directly using ``__init__()`` (throws an error).
 
@@ -744,10 +783,8 @@ class TFAutoModelWithLMHead(object):
         if type(config) in TF_MODEL_WITH_LM_HEAD_MAPPING.keys():
             return TF_MODEL_WITH_LM_HEAD_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_WITH_LM_HEAD_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_WITH_LM_HEAD_MAPPING.keys())}."
         )
 
     @classmethod
@@ -772,7 +809,7 @@ class TFAutoModelWithLMHead(object):
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelWithLMHead.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         warnings.warn(
@@ -782,7 +819,7 @@ class TFAutoModelWithLMHead(object):
             FutureWarning,
         )
         config = kwargs.pop("config", None)
-
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -793,19 +830,16 @@ class TFAutoModelWithLMHead(object):
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_WITH_LM_HEAD_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_WITH_LM_HEAD_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForCausalLM:
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a causal
-    language modeling head---when created with the when created with the
-    :meth:`~transformers.TFAutoModelForCausalLM.from_pretrained` class method or the
-    :meth:`~transformers.TFAutoModelForCausalLM.from_config` class method.
+    language modeling head---when created with the :meth:`~transformers.TFAutoModelForCausalLM.from_pretrained` class
+    method or the :meth:`~transformers.TFAutoModelForCausalLM.from_config` class method.
 
     This class cannot be instantiated directly using ``__init__()`` (throws an error).
     """
@@ -845,10 +879,8 @@ class TFAutoModelForCausalLM:
         if type(config) in TF_MODEL_FOR_CAUSAL_LM_MAPPING.keys():
             return TF_MODEL_FOR_CAUSAL_LM_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_FOR_CAUSAL_LM_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_CAUSAL_LM_MAPPING.keys())}."
         )
 
     @classmethod
@@ -873,10 +905,11 @@ class TFAutoModelForCausalLM:
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/gpt2_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/gpt2_pt_model_config.json')
             >>> model = TFAutoModelForCausalLM.from_pretrained('./pt_model/gpt2_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -887,19 +920,16 @@ class TFAutoModelForCausalLM:
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_FOR_CAUSAL_LM_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_CAUSAL_LM_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForMaskedLM:
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a masked
-    language modeling head---when created with the when created with the
-    :meth:`~transformers.TFAutoModelForMaskedLM.from_pretrained` class method or the
-    :meth:`~transformers.TFAutoModelForMaskedLM.from_config` class method.
+    language modeling head---when created with the :meth:`~transformers.TFAutoModelForMaskedLM.from_pretrained` class
+    method or the :meth:`~transformers.TFAutoModelForMaskedLM.from_config` class method.
 
     This class cannot be instantiated directly using ``__init__()`` (throws an error).
     """
@@ -939,10 +969,8 @@ class TFAutoModelForMaskedLM:
         if type(config) in TF_MODEL_FOR_MASKED_LM_MAPPING.keys():
             return TF_MODEL_FOR_MASKED_LM_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_FOR_MASKED_LM_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_MASKED_LM_MAPPING.keys())}."
         )
 
     @classmethod
@@ -967,10 +995,11 @@ class TFAutoModelForMaskedLM:
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelForMaskedLM.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -981,17 +1010,15 @@ class TFAutoModelForMaskedLM:
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__, cls.__name__, ", ".join(c.__name__ for c in TF_MODEL_FOR_MASKED_LM_MAPPING.keys())
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_MASKED_LM_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForSeq2SeqLM:
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a
-    sequence-to-sequence language modeling head---when created with the when created with the
+    sequence-to-sequence language modeling head---when created with the
     :meth:`~transformers.TFAutoModelForSeq2SeqLM.from_pretrained` class method or the
     :meth:`~transformers.TFAutoModelForSeq2SeqLM.from_config` class method.
 
@@ -1007,7 +1034,7 @@ class TFAutoModelForSeq2SeqLM:
 
     @classmethod
     @replace_list_option_in_docstrings(TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING, use_model_types=False)
-    def from_config(cls, config):
+    def from_config(cls, config, **kwargs):
         r"""
         Instantiates one of the model classes of the library---with a sequence-to-sequence language modeling
         head---from a configuration.
@@ -1031,14 +1058,10 @@ class TFAutoModelForSeq2SeqLM:
             >>> model = TFAutoModelForSeq2SeqLM.from_config(config)
         """
         if type(config) in TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING.keys():
-            return TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING[type(config)](config)
+            return TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING[type(config)](config, **kwargs)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING.keys())}."
         )
 
     @classmethod
@@ -1063,10 +1086,11 @@ class TFAutoModelForSeq2SeqLM:
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/t5_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/t5_pt_model_config.json')
             >>> model = TFAutoModelForSeq2SeqLM.from_pretrained('./pt_model/t5_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -1077,19 +1101,15 @@ class TFAutoModelForSeq2SeqLM:
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForSequenceClassification(object):
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a
-    sequence classification head---when created with the when created with the
+    sequence classification head---when created with the
     :meth:`~transformers.TFAutoModelForSequenceClassification.from_pretrained` class method or the
     :meth:`~transformers.TFAutoModelForSequenceClassification.from_config` class method.
 
@@ -1131,12 +1151,8 @@ class TFAutoModelForSequenceClassification(object):
         if type(config) in TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING.keys():
             return TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING.keys())}."
         )
 
     @classmethod
@@ -1161,10 +1177,11 @@ class TFAutoModelForSequenceClassification(object):
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelForSequenceClassification.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -1175,19 +1192,15 @@ class TFAutoModelForSequenceClassification(object):
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForQuestionAnswering(object):
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a
-    question answering head---when created with the when created with the
+    question answering head---when created with the
     :meth:`~transformers.TFAutoModeForQuestionAnswering.from_pretrained` class method or the
     :meth:`~transformers.TFAutoModelForQuestionAnswering.from_config` class method.
 
@@ -1228,12 +1241,8 @@ class TFAutoModelForQuestionAnswering(object):
         if type(config) in TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING.keys():
             return TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING.keys())}."
         )
 
     @classmethod
@@ -1258,10 +1267,11 @@ class TFAutoModelForQuestionAnswering(object):
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelForQuestionAnswering.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -1272,21 +1282,16 @@ class TFAutoModelForQuestionAnswering(object):
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_QUESTION_ANSWERING_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForTokenClassification:
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a token
-    classification head---when created with the when created with the
-    :meth:`~transformers.TFAutoModelForTokenClassification.from_pretrained` class method or the
-    :meth:`~transformers.TFAutoModelForTokenClassification.from_config` class method.
+    classification head---when created with the :meth:`~transformers.TFAutoModelForTokenClassification.from_pretrained`
+    class method or the :meth:`~transformers.TFAutoModelForTokenClassification.from_config` class method.
 
     This class cannot be instantiated directly using ``__init__()`` (throws an error).
     """
@@ -1325,12 +1330,8 @@ class TFAutoModelForTokenClassification:
         if type(config) in TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING.keys():
             return TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING.keys())}."
         )
 
     @classmethod
@@ -1355,10 +1356,11 @@ class TFAutoModelForTokenClassification:
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelForTokenClassification.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -1369,19 +1371,15 @@ class TFAutoModelForTokenClassification:
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForMultipleChoice:
     r"""
     This is a generic model class that will be instantiated as one of the model classes of the library---with a
-    multiple choice classification head---when created with the when created with the
+    multiple choice classification head---when created with the
     :meth:`~transformers.TFAutoModelForMultipleChoice.from_pretrained` class method or the
     :meth:`~transformers.TFAutoModelForMultipleChoice.from_config` class method.
 
@@ -1423,12 +1421,8 @@ class TFAutoModelForMultipleChoice:
         if type(config) in TF_MODEL_FOR_MULTIPLE_CHOICE_MAPPING.keys():
             return TF_MODEL_FOR_MULTIPLE_CHOICE_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_MULTIPLE_CHOICE_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_MULTIPLE_CHOICE_MAPPING.keys())}."
         )
 
     @classmethod
@@ -1453,10 +1447,11 @@ class TFAutoModelForMultipleChoice:
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelForMultipleChoice.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -1467,19 +1462,15 @@ class TFAutoModelForMultipleChoice:
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_MULTIPLE_CHOICE_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_MULTIPLE_CHOICE_MAPPING.keys())}."
         )
 
 
 class TFAutoModelForNextSentencePrediction:
     r"""
-    This is a generic model class that will be instantiated as one of the model classes of the library---with a
-    multiple choice classification head---when created with the when created with the
+    This is a generic model class that will be instantiated as one of the model classes of the library---with a next
+    sentence prediction head---when created with the
     :meth:`~transformers.TFAutoModelForNextSentencePrediction.from_pretrained` class method or the
     :meth:`~transformers.TFAutoModelForNextSentencePrediction.from_config` class method.
 
@@ -1521,12 +1512,8 @@ class TFAutoModelForNextSentencePrediction:
         if type(config) in TF_MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING.keys():
             return TF_MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING[type(config)](config)
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING.keys())}."
         )
 
     @classmethod
@@ -1551,10 +1538,11 @@ class TFAutoModelForNextSentencePrediction:
             True
 
             >>> # Loading from a PyTorch checkpoint file instead of a TensorFlow model (slower)
-            >>> config = AutoConfig.from_json_file('./pt_model/bert_pt_model_config.json')
+            >>> config = AutoConfig.from_pretrained('./pt_model/bert_pt_model_config.json')
             >>> model = TFAutoModelForNextSentencePrediction.from_pretrained('./pt_model/bert_pytorch_model.bin', from_pt=True, config=config)
         """
         config = kwargs.pop("config", None)
+        kwargs["_from_auto"] = True
         if not isinstance(config, PretrainedConfig):
             config, kwargs = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, return_unused_kwargs=True, **kwargs
@@ -1565,10 +1553,6 @@ class TFAutoModelForNextSentencePrediction:
                 pretrained_model_name_or_path, *model_args, config=config, **kwargs
             )
         raise ValueError(
-            "Unrecognized configuration class {} for this kind of TFAutoModel: {}.\n"
-            "Model type should be one of {}.".format(
-                config.__class__,
-                cls.__name__,
-                ", ".join(c.__name__ for c in TF_MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING.keys()),
-            )
+            f"Unrecognized configuration class {config.__class__} for this kind of TFAutoModel: {cls.__name__}.\n"
+            f"Model type should be one of {', '.join(c.__name__ for c in TF_MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING.keys())}."
         )

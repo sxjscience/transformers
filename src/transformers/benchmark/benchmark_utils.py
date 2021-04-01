@@ -30,9 +30,8 @@ from multiprocessing import Pipe, Process, Queue
 from multiprocessing.connection import Connection
 from typing import Callable, Iterable, List, NamedTuple, Optional, Union
 
-from transformers import AutoConfig, PretrainedConfig
-from transformers import __version__ as version
-
+from .. import AutoConfig, PretrainedConfig
+from .. import __version__ as version
 from ..file_utils import is_psutil_available, is_py3nvml_available, is_tf_available, is_torch_available
 from ..utils import logging
 from .benchmark_args_utils import BenchmarkArguments
@@ -759,9 +758,7 @@ class Benchmark(ABC):
 
         if self.args.env_print:
             self.print_fn("\n" + 20 * "=" + ("ENVIRONMENT INFORMATION").center(40) + 20 * "=")
-            self.print_fn(
-                "\n".join(["- {}: {}".format(prop, val) for prop, val in self.environment_info.items()]) + "\n"
-            )
+            self.print_fn("\n".join([f"- {prop}: {val}" for prop, val in self.environment_info.items()]) + "\n")
 
         if self.args.save_to_csv:
             with open(self.args.env_info_csv_file, mode="w", newline="") as csv_file:
@@ -889,9 +886,7 @@ class Benchmark(ABC):
         self.print_fn("Saving results to csv.")
         with open(filename, mode="w") as csv_file:
 
-            assert len(self.args.model_names) > 0, "At least 1 model should be defined, but got {}".format(
-                self.model_names
-            )
+            assert len(self.args.model_names) > 0, f"At least 1 model should be defined, but got {self.model_names}"
 
             fieldnames = ["model", "batch_size", "sequence_length"]
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames + ["result"])
